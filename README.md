@@ -17,10 +17,15 @@ A Laravel MCP server lets Claude call functions in your app and answer questions
 composer install
 cp .env.example .env
 php artisan key:generate
-php artisan migrate
+php artisan migrate --seed
 php artisan passport:keys
 npm install && npm run build
 ```
+
+The seeder adds 8 sample animals and a test user for the sign-in page:
+
+- Email: `test@example.com`
+- Password: `password`
 
 ## Run it locally
 
@@ -48,4 +53,4 @@ php artisan mcp:inspector shelter
 - `config/auth.php`: the `api` guard using Passport
 - `app/Models/User.php`: `OAuthenticatable` and `HasApiTokens`
 - `AppServiceProvider.php`: the approval view
-- A sign-in page, if your Laravel app didn't have one
+- `routes/web.php`: the sign-in routes, if your Laravel app didn't have a sign-in page
