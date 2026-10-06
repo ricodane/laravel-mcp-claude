@@ -6,6 +6,7 @@ use App\Models\Animal;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Request;
 use Laravel\Mcp\Response;
+use Laravel\Mcp\ResponseFactory;
 use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Tool;
 use Laravel\Mcp\Server\Tools\Annotations\IsReadOnly;
@@ -15,7 +16,7 @@ use Laravel\Mcp\Server\Tools\Annotations\IsReadOnly;
 class GetAnimalTool extends Tool
 {
     // Runs when Claude calls the tool. Think of it like a controller method.
-    public function handle(Request $request): Response
+    public function handle(Request $request): Response|ResponseFactory
     {
         $validated = $request->validate(
             ['id' => 'required|integer'],
@@ -28,14 +29,14 @@ class GetAnimalTool extends Tool
             return Response::error("No animal found with ID {$validated['id']}.");
         }
 
-        return Response::text(json_encode([
+        return Response::structured([
             'name' => $animal->name,
             'species' => $animal->species,
             'breed' => $animal->breed,
-            'age' => $animal->age_years,
+            'age' => $animal->age,
             'status' => $animal->status,
-            'arrived_on' => $animal->arrived_at->toDateString(),
-        ]));
+            'arrived_on' => $animal->arrived_at,
+        ]);
     }
 
     // The inputs Claude is allowed to send

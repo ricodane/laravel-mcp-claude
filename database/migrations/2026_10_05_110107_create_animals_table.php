@@ -16,8 +16,8 @@ return new class extends Migration
             $table->string('name');
             $table->string('species');
             $table->string('breed');
-            $table->unsignedTinyInteger('age_years');
-            $table->string('status');
+            $table->unsignedTinyInteger('age');
+            $table->string('status'); // available, reserved or adopted
             $table->date('arrived_at');
             $table->timestamps();
         });
