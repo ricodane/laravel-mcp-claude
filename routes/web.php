@@ -17,12 +17,11 @@ Route::post('/login', function (Request $request) {
         'password' => 'required',
     ]);
 
-    if (! Auth::attempt($credentials)) {
-        return back()->withErrors(['email' => 'Wrong email or password.'])->onlyInput('email');
+    if (Auth::attempt($credentials)) {
+        // Back to the approval screen the user came from
+        return redirect()->intended('/');
     }
 
-    $request->session()->regenerate();
-
-    // Back to the approval screen the user came from
-    return redirect()->intended('/');
+    // Wrong details: back to the form with an error
+    return back()->withErrors(['email' => 'Wrong email or password.']);
 });

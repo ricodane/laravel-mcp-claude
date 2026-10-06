@@ -13,7 +13,7 @@
 
         <p>
             <label for="email">Email</label><br>
-            <input id="email" type="email" name="email" value="{{ old('email') }}" required autofocus>
+            <input id="email" type="email" name="email" required autofocus>
         </p>
 
         <p>
