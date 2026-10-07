@@ -82,3 +82,7 @@ claude.ai connects from the internet, so it needs the app on a public HTTPS addr
 | `app/Models/User.php`, `config/auth.php` | Passport setup |
 
 Last checked with laravel/mcp 1.0.1 and Laravel Passport 13.8 on Laravel 13.34 (PHP 8.4), October 2026.
+
+## Issues
+
+Found a bug or have a suggestion? [Open an issue](https://github.com/ricodane/laravel-mcp-claude/issues).
