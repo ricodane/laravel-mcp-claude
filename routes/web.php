@@ -1,8 +1,8 @@
 <?php
 
+use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome');
@@ -18,10 +18,12 @@ Route::post('/login', function (Request $request) {
     ]);
 
     if (Auth::attempt($credentials)) {
+        $request->session()->regenerate();
+
         // Back to the approval screen the user came from
         return redirect()->intended('/');
     }
 
     // Wrong details: back to the form with an error
-    return back()->withErrors(['email' => 'Wrong email or password.']);
-});
+    return back()->withErrors(['email' => 'Wrong email or password.'])->onlyInput('email');
+})->middleware('throttle:5,1');

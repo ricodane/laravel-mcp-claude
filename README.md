@@ -1,56 +1,84 @@
-# Laravel MCP Server Example
+# Laravel MCP server example: connect a Laravel app to Claude
 
-Example code for the guide [How to Build a Laravel MCP Server and Connect It to Claude](https://www.tudlora.com/guides/how-to-build-a-laravel-mcp-server-and-connect-it-to-claude).
+The example app for the Tudlora guide
+[How to Build a Laravel MCP Server and Connect It to Claude](https://www.tudlora.com/guides/how-to-build-a-laravel-mcp-server-and-connect-it-to-claude).
 
-A Laravel MCP server lets Claude call functions in your app and answer questions using your real data. This repo is a small animal shelter app with a read-only server and one tool, `GetAnimalTool`, that looks up an animal by its ID. It connects to Claude Code on your machine, and online to claude.ai with a Passport login.
+It's a small animal shelter app with one MCP tool, `get-animal-tool`, that Claude can call to look up an animal by ID.
+The same server runs two ways:
 
-## What you'll need
+- **Locally**, started by Claude Code, with no login
+- **Over HTTP** at `/mcp`, protected by Laravel Passport OAuth, so Claude Code and claude.ai custom connectors can sign in
 
-- Laravel 12 (12.41.1 or newer) or Laravel 13
-- PHP 8.2 or higher
-- Claude Code, for the local part
-- A public server with HTTPS, for the online part
+The guide explains every step. This repo is the finished result.
+
+## Requirements
+
+- PHP 8.3 or higher, and Composer
+- Node.js and npm
+- [Claude Code](https://claude.com/claude-code)
 
 ## Setup
 
 ```bash
+git clone https://github.com/ricodane/laravel-mcp-claude.git
+cd laravel-mcp-claude
+
 composer install
 cp .env.example .env
 php artisan key:generate
+
+# Creates the tables, a test user and 8 animals (SQLite by default)
 php artisan migrate --seed
+
+# Passport's signing keys are gitignored, so each copy of the app makes its own
 php artisan passport:keys
-npm install && npm run build
+
+# Builds the styles for the approval screen
+npm install
+npm run build
 ```
 
-The seeder adds 8 sample animals and a test user for the sign-in page:
+The seeded test user is `test@example.com` with the password `password`.
 
-- Email: `test@example.com`
-- Password: `password`
-
-## Run it locally
-
-From the project root, tell Claude Code how to start the server:
+## Try it locally in Claude Code
 
 ```bash
 claude mcp add shelter -- php artisan mcp:start shelter
 ```
 
-Open Claude Code and type `/mcp`. You should see `shelter` listed as connected, along with its tool count. Then ask it something:
+Open Claude Code from this folder, then ask:
 
-> is animal 8 still up for adoption?
+> Is animal 8 still up for adoption?
 
-To test the server before connecting Claude at all, use the built-in inspector:
+Claude calls `get-animal-tool` and answers with Biscuit, a 2-year-old Corgi.
+
+## Try it over HTTP with OAuth
 
 ```bash
-php artisan mcp:inspector shelter
+php artisan serve
 ```
 
-## Files you touched
+In another terminal:
 
-- `routes/ai.php`: registers the server locally and online, plus the OAuth routes
-- `app/Mcp/Servers/ShelterServer.php`: name, version, instructions, and the list of tools
-- `app/Mcp/Tools/GetAnimalTool.php`: description, `handle()`, `schema()`
-- `config/auth.php`: the `api` guard using Passport
-- `app/Models/User.php`: `OAuthenticatable` and `HasApiTokens`
-- `AppServiceProvider.php`: the approval view
-- `routes/web.php`: the sign-in routes, if your Laravel app didn't have a sign-in page
+```bash
+claude mcp add --transport http shelter-web http://127.0.0.1:8000/mcp
+```
+
+Open Claude Code from this folder, type `/mcp`, select `shelter-web` and choose **Authenticate**. Sign in with the test user, click **Authorize**, then ask the same question.
+
+claude.ai connects from the internet, so it needs the app on a public HTTPS address. See Steps 11 and 12 of the guide.
+
+## Where things are
+
+| File | What it does |
+| --- | --- |
+| `app/Mcp/Tools/GetAnimalTool.php` | The `get-animal-tool` tool, with its permission check |
+| `app/Mcp/Servers/ShelterServer.php` | The MCP server and the tools it offers |
+| `routes/ai.php` | The local server, the OAuth routes and the `/mcp` route |
+| `routes/web.php` | The sign-in routes |
+| `resources/views/login.blade.php` | The sign-in form |
+| `resources/views/mcp/authorize.blade.php` | The approval screen |
+| `app/Providers/AppServiceProvider.php` | The approval view, the `view-animals` gate, token lifetimes and the rate limit |
+| `app/Models/User.php`, `config/auth.php` | Passport setup |
+
+Last checked with laravel/mcp 1.0.1 and Laravel Passport 13.8 on Laravel 13.34 (PHP 8.4), October 2026.

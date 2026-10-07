@@ -16,11 +16,17 @@ use Laravel\Mcp\Server\Tools\Annotations\IsReadOnly;
 class GetAnimalTool extends Tool
 {
     // Runs when Claude calls the tool. Think of it like a controller method.
+    // structured() returns a ResponseFactory, error() a plain Response, so the return type allows both
     public function handle(Request $request): Response|ResponseFactory
     {
+        // A user is only missing when running locally through Claude Code
+        if ($request->user() && ! $request->user()->can('view-animals')) {
+            return Response::error('Permission denied.');
+        }
+
         $validated = $request->validate(
             ['id' => 'required|integer'],
-            ['id.required' => 'You must provide an animal ID, for example 8.']
+            ['id.required' => "You must provide an animal ID (a whole number). If you don't know it, ask the user which animal they mean."]
         );
 
         $animal = Animal::find($validated['id']);

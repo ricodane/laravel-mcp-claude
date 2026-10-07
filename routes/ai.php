@@ -2,12 +2,12 @@
 
 use Laravel\Mcp\Facades\Mcp;
 
-// Claude Code on your machine
 Mcp::local('shelter', \App\Mcp\Servers\ShelterServer::class);
 
 // Login addresses claude.ai reads to find where to sign in
 Mcp::oauthRoutes();
 
-// Claude sends requests to this URL
+// The same server over HTTP, for claude.ai
 Mcp::web('/mcp', \App\Mcp\Servers\ShelterServer::class)
-    ->middleware('auth:api');
+    // Only requests with a valid token get through
+    ->middleware(['auth:api', 'throttle:mcp']);
